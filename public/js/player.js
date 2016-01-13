@@ -13,6 +13,7 @@ Player.prototype.addSprite = function(game){
   this.sprite = game.add.sprite(this.x, this.y, this.animal);
   game.physics.enable(this.sprite, Phaser.Physics.ARCADE);
   this.sprite.body.collideWorldBounds = true;
+  this.sprite.id = this.id;
   this.height = this.sprite.height;
   this.width = this.sprite.width;
   return this.sprite;
@@ -21,8 +22,6 @@ Player.prototype.addSprite = function(game){
 Player.prototype.setPosition = function(pos){
   this.sprite.x = pos.x;
   this.sprite.y = pos.y;
-  console.log(pos);
-  console.log(this.sprite.body.x);
   return pos;//TODO: need return?
 };
 

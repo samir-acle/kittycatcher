@@ -74,6 +74,10 @@ io.on('connection', function(socket){
     io.emit('gameUpdated:movement', {player: movingPlayer});
   });
 
+  socket.on('collision', function(){
+    console.log('collided');
+  });
+
   socket.on('disconnect', function(){
     Player.delete(socket.id, players);
     socket.broadcast.emit('gameUpdated:remove', {id: socket.id});

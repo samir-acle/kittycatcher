@@ -42,8 +42,6 @@ Game.prototype.playPreloadFunction = function(){  //TODO: do these need to be pr
 Game.prototype.playCreateFunction = function(){
   this.game.physics.startSystem(Phaser.Physics.ARCADE);
   this.game.stage.disableVisibilityChange = true;
-  console.log('in create this',this);
-  console.log('in create this',this.game);
   this.cursors = this.addKeyboard();
 
   this.playersData.forEach(function(player){
@@ -56,7 +54,22 @@ Game.prototype.playCreateFunction = function(){
     height: this.currentPlayer.sprite.height
   });
   this.setSocketListeners();
+
+  //grouping by other players
+  this.createGroups();
 };
+
+Game.prototype.createGroups = function(){
+  this.others = this.game.add.group();
+
+  this.players.forEach(function(player){
+    if(player.id !== this.socketID){
+      this.others.add(player.sprite);
+    }
+  }, this);
+
+  console.log(this.others);
+}
 
 Game.prototype.addPlayer = function(player){
     var newPlayer = new Player(player.player);
@@ -90,6 +103,7 @@ Game.prototype.updatePlayer = function(player){
     x : player.player.x,
     y : player.player.y
   });
+  this.checkCollisions();
 };
 
 Game.prototype.removePlayer = function(data){
@@ -100,4 +114,12 @@ Game.prototype.removePlayer = function(data){
     this.players[playerIndex].sprite.destroy();
     this.players.splice(playerIndex, 1);
   }
+};
+
+Game.prototype.checkCollisions = function(){
+  //collide separates, overlap does not, try both for fun
+  console.log('checking collisions');
+  this.game.physics.arcade.overlap(this.currentPlayer.sprite, this.others, function(currentSprite, otherSprite){
+    this.socket.emit('collision', {id: otherSprite.id});
+  }.bind(this));
 };
