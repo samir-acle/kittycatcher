@@ -3,6 +3,9 @@
 var Game = function(data){
   this.playersArray = [];
   this.socket = data.socket;
+  this.WIDTH = 800;
+  this.HEIGHT = 600;
+  this.speed = 1;
 };
 
 Game.prototype.addSprite = function(player){
@@ -14,7 +17,7 @@ Game.prototype.addSprite = function(player){
 Game.prototype.init = function(){
   var self = this;
   console.log('in game init');
-  self.game = new Phaser.Game(800, 600, Phaser.CANVAS, '');
+  self.game = new Phaser.Game(self.WIDTH, self.HEIGHT, Phaser.CANVAS, '');
 
   var mainState = {
     preload: function(){
@@ -45,6 +48,7 @@ Game.prototype.init = function(){
       self.addSprite(player);
     });
 
+    //TODO: maybe make player class?
     // player = game.add.sprite(game.world.centerX, game.world.centerY, 'cat');
     // game.physics.p2.enable(player);
 
@@ -55,35 +59,30 @@ Game.prototype.init = function(){
   function setSocketListeners(){
     self.socket.on('playerMovement:left', function(data){
       var movingPlayer = helpers.getPlayerByID(data.id, self.playersArray);
-      movingPlayer.sprite.body.velocity.x = -200;
+      movingPlayer.sprite.x += self.speed * -5;
       // self.socket.emit('new position', {x: player.body.x, y: player.body.y});
     });
 
     self.socket.on('playerMovement:right', function(data){
       var movingPlayer = helpers.getPlayerByID(data.id, self.playersArray);
-      movingPlayer.sprite.body.velocity.x = 200;
+      movingPlayer.sprite.x += self.speed * 5;
       // self.socket.emit('new position', {x: player.body.x, y: player.body.y});
     });
 
     self.socket.on('playerMovement:up', function(data){
       var movingPlayer = helpers.getPlayerByID(data.id, self.playersArray);
-      movingPlayer.sprite.body.velocity.y = -200;
+      movingPlayer.sprite.y += self.speed * -5;
       // self.socket.emit('new position', {x: player.body.x, y: player.body.y});
     });
 
     self.socket.on('playerMovement:down', function(data){
       var movingPlayer = helpers.getPlayerByID(data.id, self.playersArray);
-      movingPlayer.sprite.body.velocity.y = 200;
+      movingPlayer.sprite.y += self.speed * 5;
       // self.socket.emit('new position', {x: player.body.x, y: player.body.y});
     });
   }
 
   function mainUpdateFunction(){
-    for(var i = 0; i < this.playersArray.length; i++){
-      this.playersArray[i].sprite.body.velocity.x = 0;
-      this.playersArray[i].sprite.body.velocity.y = 0;
-    }
-
     if (cursors.left.isDown){
       this.socket.emit('keyboard:left');
     } else if (cursors.right.isDown){
@@ -95,6 +94,11 @@ Game.prototype.init = function(){
     } else if (cursors.down.isDown){
       this.socket.emit('keyboard:down');
     }
+
+    // for(var i = 0; i < this.playersArray.length; i++){
+    //   this.playersArray[i].sprite.body.velocity.x = 0;
+    //   this.playersArray[i].sprite.body.velocity.y = 0;
+    // }
   }
 }
 
