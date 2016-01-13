@@ -6,10 +6,9 @@ $(document).ready(function(){
   socket.emit('joinGame');
 
   socket.on('joinSuccess', function(data){
-    console.log(data);
     var game = new Game({socket: socket});
-    game.playerId = data.id;
     game.playersArray = data.players;
+    game.currentPlayer = helpers.getPlayerByID(data.id, game.playersArray);
     game.init();
   });
 });

@@ -48,6 +48,10 @@ Game.prototype.init = function(){
     game.stage.disableVisibilityChange = true;
 
     // game.camera.follow(player);
+    setSocketListeners();
+  }
+
+  function setSocketListeners(){
     self.socket.on('moved left', function(){
       player.body.velocity.x = -200;
       socket.emit('new position', {x: player.body.x, y: player.body.y});
