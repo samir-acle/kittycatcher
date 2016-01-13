@@ -1,132 +1,96 @@
 "use strict";
 
 var Game = function(data){
-  this.playersArray = [];
-  this.socket = data.socket;
   this.WIDTH = 800;
   this.HEIGHT = 600;
-  this.speed = 1;
-};
-
-Game.prototype.addSprite = function(player){
-  player.sprite = this.game.add.sprite(player.x, player.y, player.type);
-  this.game.physics.enable(player.sprite, Phaser.Physics.ARCADE);
-  player.sprite.body.collideWorldBounds = true;
+  this.states = [
+    { stateName: 'play',
+      stateFunctions: {
+        preload: this.playPreloadFunction.bind(this),
+        create: this.playCreateFunction.bind(this),
+        update: this.playUpdateFunction.bind(this)
+      }
+    }
+  ],
+  this.playersData = data.data.players;
+  this.socket = data.socket;
+  this.players = [];
 };
 
 Game.prototype.init = function(){
-  var self = this;
-  console.log('in game init');
-  self.game = new Phaser.Game(self.WIDTH, self.HEIGHT, Phaser.CANVAS, '');
+  this.game = new Phaser.Game(self.WIDTH, self.HEIGHT, Phaser.CANVAS, ''); //TODO: auto or canvas
+  this.addStates();
+  this.game.state.start('play'); //TODO: capitalize
+};
 
-  var mainState = {
-    preload: function(){
-      self.game.load.image('cat', '../images/domestic2.svg');
-    },
-    create: mainCreateFunction,
-    update: mainUpdateFunction.bind(self)
-  };
+Game.prototype.addStates = function(){
+  this.states.forEach(function(state){
+    this.game.state.add(state.stateName, state.stateFunctions);
+  }, this);
+};
 
-  self.game.state.add('Main', mainState);
-  self.game.state.start('Main');
+Game.prototype.addKeyboard = function(){
+  return this.game.input.keyboard.createCursorKeys();
+};
 
-  var cursors;
+Game.prototype.playPreloadFunction = function(){  //TODO: do these need to be proto or can be class methods?
+  this.game.load.image('cat', '../images/domestic2.svg');
+};
 
-  function preload(){
-    self.game.load.image('cat', '../images/domestic2.svg');
+Game.prototype.playCreateFunction = function(){
+  this.game.physics.startSystem(Phaser.Physics.ARCADE);
+  this.game.stage.disableVisibilityChange = true;
+  console.log('in create this',this);
+  console.log('in create this',this.game);
+  this.cursors = this.addKeyboard();
+
+  this.playersData.forEach(function(player){
+    this.addPlayer({player: player});
+  }, this)
+
+  this.setSocketListeners();
+};
+
+Game.prototype.addPlayer = function(player){
+    var newPlayer = new Player(player.player);
+    newPlayer.addSprite(this.game);
+    this.players.push(newPlayer);
+};
+
+Game.prototype.playUpdateFunction = function(){
+  if (this.cursors.left.isDown){
+    this.socket.emit('keyboard:left');
+  } else if (this.cursors.right.isDown){
+    this.socket.emit('keyboard:right');
   }
 
-  function mainCreateFunction(){
-    // game.world.setBounds(0, 0, 1920, 1920);
-    self.game.physics.startSystem(Phaser.Physics.ARCADE);
-    //disbale automatic pausing of the game if leave the tab
-    self.game.stage.disableVisibilityChange = true;
-    cursors = self.game.input.keyboard.createCursorKeys();
-
-    // loop through players and create
-    self.playersArray.forEach(function(player){
-      console.log(player);
-      self.addSprite(player);
-    });
-
-    //TODO: maybe make player class?
-    // player = game.add.sprite(game.world.centerX, game.world.centerY, 'cat');
-    // game.physics.p2.enable(player);
-
-    // game.camera.follow(player);
-    setSocketListeners();
+  if (this.cursors.up.isDown){
+    this.socket.emit('keyboard:up');
+  } else if (this.cursors.down.isDown){
+    this.socket.emit('keyboard:down');
   }
+};
 
-//TODO: refactor - dont need data.id if change on server, but whats best practice?
-  function setSocketListeners(){
-    self.socket.on('playerMovement:left', function(data){
-      var movingPlayer = helpers.getPlayerByID(data.id, self.playersArray);
-      movingPlayer.sprite.x += self.speed * -5;
-      //TODO: update position on server side then send back?
-      if (self.currentPlayer.id === data.id) {
-        self.socket.emit('position:update', {
-          id: data.id,
-          x: movingPlayer.sprite.x,
-          y: movingPlayer.sprite.y
-        });
-      }
-    });
+Game.prototype.setSocketListeners = function(){
+  this.socket.on('gameUpdated:movement', this.updatePlayer.bind(this));
+  this.socket.on('gameUpdated:add', this.addPlayer.bind(this));
+  this.socket.on('gameUpdated:remove', this.removePlayer.bind(this));
+};
 
-    self.socket.on('playerMovement:right', function(data){
-      var movingPlayer = helpers.getPlayerByID(data.id, self.playersArray);
-      movingPlayer.sprite.x += self.speed * 5;
+Game.prototype.updatePlayer = function(player){
+  var playerToUpdate = helpers.getPlayerByID(player.player.id, this.players);//TODO: rename to getByID
+  playerToUpdate.setPosition({
+    x : player.player.x,
+    y : player.player.y
+  });
+};
 
-      if (self.currentPlayer.id === data.id) {
-        self.socket.emit('position:update', {
-          id: data.id,
-          x: movingPlayer.sprite.x,
-          y: movingPlayer.sprite.y
-        });
-      }
-    });
+Game.prototype.removePlayer = function(data){
+  console.log('remove data', data);
+  var playerIndex = helpers.getIndexByID(data.id, this.players);
 
-    self.socket.on('playerMovement:up', function(data){
-      var movingPlayer = helpers.getPlayerByID(data.id, self.playersArray);
-      movingPlayer.sprite.y += self.speed * -5;
-
-      if (self.currentPlayer.id === data.id) {
-        self.socket.emit('position:update', {
-          id: data.id,
-          x: movingPlayer.sprite.x,
-          y: movingPlayer.sprite.y
-        });
-      }
-    });
-
-    self.socket.on('playerMovement:down', function(data){
-      var movingPlayer = helpers.getPlayerByID(data.id, self.playersArray);
-      movingPlayer.sprite.y += self.speed * 5;
-      if (self.currentPlayer.id === data.id) {
-        self.socket.emit('position:update', {
-          id: data.id,
-          x: movingPlayer.sprite.x,
-          y: movingPlayer.sprite.y
-        });
-      }
-    });
+  if (playerIndex > -1) {
+    this.players[playerIndex].sprite.destroy();
+    this.players.splice(playerIndex, 1);
   }
-
-  function mainUpdateFunction(){
-    if (cursors.left.isDown){
-      this.socket.emit('keyboard:left');
-    } else if (cursors.right.isDown){
-      this.socket.emit('keyboard:right');
-    }
-
-    if (cursors.up.isDown){
-      this.socket.emit('keyboard:up');
-    } else if (cursors.down.isDown){
-      this.socket.emit('keyboard:down');
-    }
-
-    // for(var i = 0; i < this.playersArray.length; i++){
-    //   this.playersArray[i].sprite.body.velocity.x = 0;
-    //   this.playersArray[i].sprite.body.velocity.y = 0;
-    // }
-  }
-}
+};

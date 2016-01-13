@@ -4,6 +4,7 @@ var server = require('http').Server(app);
 var io = require('socket.io')(server);
 var Player = require('./models/player.js');
 var players = [];
+var port = process.env.PORT || 3000;
 //var clients = [];
 
 app.use(express.static(__dirname + '/public'));
@@ -33,26 +34,27 @@ io.on('connection', function(socket){
 
   socket.on('keyboard:left', function(){
     //this = socket
-    // var movingPlayer = Player.findById(socket.id, players);
-    io.emit('playerMovement:left', {id: socket.id});
+    var movingPlayer = Player.findById(socket.id, players);
+    movingPlayer.x -= 5;
+    io.emit('gameUpdated:movement', {player: movingPlayer});
   });
 
   socket.on('keyboard:right', function(){
-    io.emit('playerMovement:right', {id: socket.id});
+    var movingPlayer = Player.findById(socket.id, players);
+    movingPlayer.x += 5;
+    io.emit('gameUpdated:movement', {player: movingPlayer});
   });
 
   socket.on('keyboard:up', function(){
-    io.emit('playerMovement:up', {id: socket.id});
+    var movingPlayer = Player.findById(socket.id, players);
+    movingPlayer.y -= 5;
+    io.emit('gameUpdated:movement', {player: movingPlayer});
   });
 
   socket.on('keyboard:down', function(){
-    io.emit('playerMovement:down', {id: socket.id});
-  });
-
-  socket.on('position:update', function(data){
-    var player = Player.findById(data.id, players);
-    player.x = data.x;
-    player.y = data.y;
+    var movingPlayer = Player.findById(socket.id, players);
+    movingPlayer.y += 5;
+    io.emit('gameUpdated:movement', {player: movingPlayer});
   });
 
   socket.on('disconnect', function(){
@@ -61,6 +63,6 @@ io.on('connection', function(socket){
   });
 });
 
-server.listen(process.env.PORT || 3000, function(){
+server.listen(port, function(){
   console.log('listening');
 });
