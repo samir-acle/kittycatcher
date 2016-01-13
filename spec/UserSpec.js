@@ -1,6 +1,7 @@
 describe("User", function() {
   var io = require('socket.io-client');
   var socket;
+  var Player = require('./models/player.js');
 
   beforeEach(function(done){
     socket = io.connect('http://localhost:3000', {
@@ -38,7 +39,7 @@ describe("User", function() {
     });
 
     it("should be the only user with its userID", function(){
-
+      var players = [];
     });
   });
 
