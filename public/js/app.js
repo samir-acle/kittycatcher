@@ -3,13 +3,15 @@ var game;
 
 $(document).ready(function(){
   var socket = io();
-  // game;
 
-  socket.emit('joinGame');
+  socket.emit('join:request');
 
-  socket.on('joinSuccess', function(data){
+  socket.on('join:success', function(data){
     game = new Game({data: data, socket: socket});
-    game.currentPlayer = helpers.getPlayerByID(data.id, game.players);
+    var currentPlayer = helpers.getPlayerByID(data.id, game.players);
+    console.log('currentplayer', currentPlayer);
+    game.currentPlayer = currentPlayer;
     game.init();
   });
+  
 });

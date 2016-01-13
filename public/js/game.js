@@ -1,8 +1,9 @@
 "use strict";
 
 var Game = function(data){
-  this.WIDTH = 800;
-  this.HEIGHT = 600;
+  console.log('data', data);
+  this.WIDTH = data.data.width;
+  this.HEIGHT = data.data.height;
   this.states = [
     { stateName: 'play',
       stateFunctions: {
@@ -15,6 +16,7 @@ var Game = function(data){
   this.playersData = data.data.players;
   this.socket = data.socket;
   this.players = [];
+  this.socketID = data.data.id;
 };
 
 Game.prototype.init = function(){
@@ -46,8 +48,13 @@ Game.prototype.playCreateFunction = function(){
 
   this.playersData.forEach(function(player){
     this.addPlayer({player: player});
-  }, this)
+  }, this);
 
+  this.currentPlayer = helpers.getPlayerByID(this.socketID, this.players);
+  this.socket.emit('player:stats', {
+    width: this.currentPlayer.sprite.width,
+    height: this.currentPlayer.sprite.height
+  });
   this.setSocketListeners();
 };
 
