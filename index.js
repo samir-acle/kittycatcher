@@ -16,15 +16,9 @@ app.get('/', function(req, res){
 //TODO: encapsulate io in game object andmove to new file
 //TODO: client[soket.id] = socket - need or no?
 io.on('connection', function(socket){
-  console.log('a user connected');
-  console.log(socket.id);
-
   socket.on('joinGame', function(){
-    console.log('players before push', players);
     var newPlayer = new Player(socket.id);
     players.push(newPlayer);
-    console.log('players after joingame and push', players);
-    console.log('socket', socket.id);
 
     //TODO: should i send player object instead of just id?
     //TODO: combine with broadcast to make dry- on client side?
@@ -32,6 +26,7 @@ io.on('connection', function(socket){
     socket.broadcast.emit('gameUpdated:add', {player: newPlayer});
   });
 
+  //TODO: DRY this up a bit keyboard:* (regexp?)
   socket.on('keyboard:left', function(){
     //this = socket
     var movingPlayer = Player.findById(socket.id, players);

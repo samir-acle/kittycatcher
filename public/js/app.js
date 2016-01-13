@@ -12,20 +12,4 @@ $(document).ready(function(){
     game.currentPlayer = helpers.getPlayerByID(data.id, game.players);
     game.init();
   });
-  //
-  // socket.on('gameUpdated:remove', function(data){
-  //   var playerIndex = helpers.getIndexByID(data.id, game.playersArray);
-  //
-  //   if (playerIndex > -1) {
-  //     game.playersArray[playerIndex].sprite.destroy();
-  //     game.playersArray.splice(playerIndex, 1);
-  //     console.log('player has disconnected');
-  //   }
-  // });
-  //
-  // socket.on('gameUpdated:add', function(data){
-  //   var newPlayer = data.player;
-  //   game.playersArray.push(newPlayer);
-  //   game.addSprite(newPlayer);
-  // });
 });
