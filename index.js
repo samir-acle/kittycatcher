@@ -45,7 +45,8 @@ io.on('connection', function(socket){
     io.emit('playerMovement:down', {id: socket.id});
   });
 
-  socket.on('new position', function(x,y){
+  socket.on('position:update', function(x,y){
+    var player = Player.findById(socket.id, players);
     player.x = x;
     player.y = y;
   });

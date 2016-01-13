@@ -56,25 +56,25 @@ Game.prototype.init = function(){
     self.socket.on('playerMovement:left', function(data){
       var movingPlayer = helpers.getPlayerByID(data.id, self.playersArray);
       movingPlayer.sprite.body.velocity.x = -200;
-      // self.socket.emit('new position', {x: player.body.x, y: player.body.y});
+      self.socket.emit('position:update', {x: movingPlayer.sprite.x, y: movingPlayer.sprite.y});
     });
 
     self.socket.on('playerMovement:right', function(data){
       var movingPlayer = helpers.getPlayerByID(data.id, self.playersArray);
       movingPlayer.sprite.body.velocity.x = 200;
-      // self.socket.emit('new position', {x: player.body.x, y: player.body.y});
+      self.socket.emit('position:update', {x: movingPlayer.sprite.x, y: movingPlayer.sprite.y});
     });
 
     self.socket.on('playerMovement:up', function(data){
       var movingPlayer = helpers.getPlayerByID(data.id, self.playersArray);
       movingPlayer.sprite.body.velocity.y = -200;
-      // self.socket.emit('new position', {x: player.body.x, y: player.body.y});
+      self.socket.emit('position:update', {x: movingPlayer.sprite.x, y: movingPlayer.sprite.y});
     });
 
     self.socket.on('playerMovement:down', function(data){
       var movingPlayer = helpers.getPlayerByID(data.id, self.playersArray);
       movingPlayer.sprite.body.velocity.y = 200;
-      // self.socket.emit('new position', {x: player.body.x, y: player.body.y});
+      self.socket.emit('position:update', {x: movingPlayer.sprite.x, y: movingPlayer.sprite.y});
     });
   }
 
