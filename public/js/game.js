@@ -42,6 +42,7 @@ Game.prototype.init = function(){
 
     // loop through players and create
     self.playersArray.forEach(function(player){
+      console.log(player);
       self.addSprite(player);
     });
 
@@ -52,29 +53,54 @@ Game.prototype.init = function(){
     setSocketListeners();
   }
 
+//TODO: refactor - dont need data.id if change on server, but whats best practice?
   function setSocketListeners(){
     self.socket.on('playerMovement:left', function(data){
       var movingPlayer = helpers.getPlayerByID(data.id, self.playersArray);
       movingPlayer.sprite.body.velocity.x = -200;
-      self.socket.emit('position:update', {x: movingPlayer.sprite.x, y: movingPlayer.sprite.y});
+      if (self.currentPlayer.id === data.id) {
+        self.socket.emit('position:update', {
+          id: data.id,
+          x: movingPlayer.sprite.x,
+          y: movingPlayer.sprite.y
+        });
+      }
     });
 
     self.socket.on('playerMovement:right', function(data){
       var movingPlayer = helpers.getPlayerByID(data.id, self.playersArray);
       movingPlayer.sprite.body.velocity.x = 200;
-      self.socket.emit('position:update', {x: movingPlayer.sprite.x, y: movingPlayer.sprite.y});
+      if (self.currentPlayer.id === data.id) {
+        self.socket.emit('position:update', {
+          id: data.id,
+          x: movingPlayer.sprite.x,
+          y: movingPlayer.sprite.y
+        });
+      }
     });
 
     self.socket.on('playerMovement:up', function(data){
       var movingPlayer = helpers.getPlayerByID(data.id, self.playersArray);
       movingPlayer.sprite.body.velocity.y = -200;
-      self.socket.emit('position:update', {x: movingPlayer.sprite.x, y: movingPlayer.sprite.y});
+      if (self.currentPlayer.id === data.id) {
+        self.socket.emit('position:update', {
+          id: data.id,
+          x: movingPlayer.sprite.x,
+          y: movingPlayer.sprite.y
+        });
+      }
     });
 
     self.socket.on('playerMovement:down', function(data){
       var movingPlayer = helpers.getPlayerByID(data.id, self.playersArray);
       movingPlayer.sprite.body.velocity.y = 200;
-      self.socket.emit('position:update', {x: movingPlayer.sprite.x, y: movingPlayer.sprite.y});
+      if (self.currentPlayer.id === data.id) {
+        self.socket.emit('position:update', {
+          id: data.id,
+          x: movingPlayer.sprite.x,
+          y: movingPlayer.sprite.y
+        });
+      }
     });
   }
 

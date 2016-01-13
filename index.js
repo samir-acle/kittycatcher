@@ -19,12 +19,16 @@ io.on('connection', function(socket){
   console.log(socket.id);
 
   socket.on('joinGame', function(){
-    var currentPlayer = new Player(socket.id);
-    players.push(currentPlayer);
+    console.log('players before push', players);
+    var newPlayer = new Player(socket.id);
+    players.push(newPlayer);
+    console.log('players after joingame and push', players);
+    console.log('socket', socket.id);
+
     //TODO: should i send player object instead of just id?
     //TODO: combine with broadcast to make dry- on client side?
     socket.emit('joinSuccess', {players: players, id: socket.id});
-    socket.broadcast.emit('gameUpdated:add', {player: currentPlayer});
+    socket.broadcast.emit('gameUpdated:add', {player: newPlayer});
   });
 
   socket.on('keyboard:left', function(){
@@ -45,10 +49,10 @@ io.on('connection', function(socket){
     io.emit('playerMovement:down', {id: socket.id});
   });
 
-  socket.on('position:update', function(x,y){
-    var player = Player.findById(socket.id, players);
-    player.x = x;
-    player.y = y;
+  socket.on('position:update', function(data){
+    var player = Player.findById(data.id, players);
+    player.x = data.x;
+    player.y = data.y;
   });
 
   socket.on('disconnect', function(){
