@@ -1,8 +1,9 @@
 "use strict";
+var game;
 
 $(document).ready(function(){
   var socket = io();
-  var game;
+  // game;
 
   socket.emit('joinGame');
 

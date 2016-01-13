@@ -4,6 +4,7 @@ var server = require('http').Server(app);
 var io = require('socket.io')(server);
 var Player = require('./models/player.js');
 var players = [];
+//var clients = [];
 
 app.use(express.static(__dirname + '/public'));
 
@@ -12,15 +13,13 @@ app.get('/', function(req, res){
 });
 
 //TODO: encapsulate io in game object andmove to new file
+//TODO: client[soket.id] = socket - need or no?
 io.on('connection', function(socket){
   console.log('a user connected');
   console.log(socket.id);
 
-  var currentPlayer;
-  // var userID = players.length > 0 ? Player.generateID(players) : 1;
-  // var player = new Player(userID, socket.id);
   socket.on('joinGame', function(){
-    currentPlayer = new Player(socket.id);
+    var currentPlayer = new Player(socket.id);
     players.push(currentPlayer);
     //TODO: should i send player object instead of just id?
     //TODO: combine with broadcast to make dry- on client side?
@@ -28,20 +27,22 @@ io.on('connection', function(socket){
     socket.broadcast.emit('gameUpdated:add', {player: currentPlayer});
   });
 
-  socket.on('left', function(player){
-    io.emit('moved left', players);
+  socket.on('keyboard:left', function(){
+    //this = socket
+    // var movingPlayer = Player.findById(socket.id, players);
+    io.emit('playerMovement:left', {id: socket.id});
   });
 
-  socket.on('right', function(player){
-    io.emit('moved right', players);
+  socket.on('keyboard:right', function(){
+    io.emit('playerMovement:right', {id: socket.id});
   });
 
-  socket.on('up', function(player){
-    io.emit('moved up', players);
+  socket.on('keyboard:up', function(){
+    io.emit('playerMovement:up', {id: socket.id});
   });
 
-  socket.on('down', function(player){
-    io.emit('moved down', players);
+  socket.on('keyboard:down', function(){
+    io.emit('playerMovement:down', {id: socket.id});
   });
 
   socket.on('new position', function(x,y){
