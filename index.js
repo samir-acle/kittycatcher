@@ -6,10 +6,10 @@ var Player = require('./models/player.js');
 var players = [];
 //var clients = [];
 
-app.use(express.static(__dirname + '/public'));
+app.use(express.static('/public'));
 
 app.get('/', function(req, res){
-  res.sendFile(__dirname + '/index.html');
+  res.sendFile('/index.html');
 });
 
 //TODO: encapsulate io in game object andmove to new file
