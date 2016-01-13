@@ -23,7 +23,9 @@ io.on('connection', function(socket){
     currentPlayer = new Player(socket.id);
     players.push(currentPlayer);
     //TODO: should i send player object instead of just id?
-    socket.emit('joinSuccess', {players: players, id: socket.id} );
+    //TODO: combine with broadcast to make dry- on client side?
+    socket.emit('joinSuccess', {players: players, id: socket.id});
+    socket.broadcast.emit('gameUpdated:add', {player: currentPlayer});
   });
 
   socket.on('left', function(player){
@@ -49,7 +51,7 @@ io.on('connection', function(socket){
 
   socket.on('disconnect', function(){
     Player.delete(socket.id, players);
-    socket.broadcast.emit('playerDisconnected', {id: socket.id});
+    socket.broadcast.emit('gameUpdated:remove', {id: socket.id});
   });
 });
 

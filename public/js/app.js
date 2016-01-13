@@ -13,10 +13,19 @@ $(document).ready(function(){
     game.init();
   });
 
-  socket.on('playerDisconnected', function(data){
+  socket.on('gameUpdated:remove', function(data){
     var playerIndex = helpers.getIndexByID(data.id, game.playersArray);
-    game.playersArray[playerIndex].sprite.destroy();
-    game.playersArray.splice(playerIndex, 1);
-    console.log('array',game.playersArray);
+
+    if (playerIndex > -1) {
+      game.playersArray[playerIndex].sprite.destroy();
+      game.playersArray.splice(playerIndex, 1);
+      console.log('player has disconnected');
+    }
+  });
+
+  socket.on('gameUpdated:add', function(data){
+    var newPlayer = data.player;
+    game.playersArray.push(newPlayer);
+    game.addSprite(newPlayer);
   });
 });

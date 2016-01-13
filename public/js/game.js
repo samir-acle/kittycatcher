@@ -1,45 +1,48 @@
 "use strict";
 var Game = function(data){
   this.playersArray = [];
-  this.playersSprites = [];
   this.socket = data.socket;
+};
+
+Game.prototype.addSprite = function(player){
+  player.sprite = this.game.add.sprite(player.x, player.y, player.type);
+  this.game.physics.enable(player.sprite, Phaser.Physics.ARCADE);
+  player.sprite.body.collideWorldBounds = true;
 };
 
 Game.prototype.init = function(){
   var self = this;
   console.log('in game init');
-  var game = new Phaser.Game(800, 600, Phaser.CANVAS, '');
+  self.game = new Phaser.Game(800, 600, Phaser.CANVAS, '');
 
   var mainState = {
     preload: function(){
-      game.load.image('cat', '../images/domestic2.svg');
+      self.game.load.image('cat', '../images/domestic2.svg');
     },
     create: mainCreateFunction
   };
 
-  game.state.add('Main', mainState);
-  game.state.start('Main');
+  self.game.state.add('Main', mainState);
+  self.game.state.start('Main');
 
   var cursors;
 
   function preload(){
-    game.load.image('cat', '../images/domestic2.svg');
+    self.game.load.image('cat', '../images/domestic2.svg');
   }
 
   function mainCreateFunction(){
     console.log('in create');
     //TODO: listen for joined game and initial position
     // game.world.setBounds(0, 0, 1920, 1920);
-    game.physics.startSystem(Phaser.Physics.ARCADE);
+    self.game.physics.startSystem(Phaser.Physics.ARCADE);
     //disbale automatic pausing of the game if leave the tab
-    game.stage.disableVisibilityChange = true;
-    cursors = game.input.keyboard.createCursorKeys();
+    self.game.stage.disableVisibilityChange = true;
+    cursors = self.game.input.keyboard.createCursorKeys();
 
     // loop through players and create
     self.playersArray.forEach(function(player){
-      player.sprite = game.add.sprite(player.x, player.y, player.type);
-      game.physics.enable(player.sprite, Phaser.Physics.ARCADE);
-      player.sprite.body.collideWorldBounds = true;
+      self.addSprite(player);
     });
 
     // player = game.add.sprite(game.world.centerX, game.world.centerY, 'cat');
