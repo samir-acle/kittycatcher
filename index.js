@@ -22,7 +22,7 @@ io.on('connection', function(socket){
   socket.on('joinGame', function(){
     currentPlayer = new Player(socket.id);
     players.push(currentPlayer);
-    //TODO: should i send player object instead of just id? 
+    //TODO: should i send player object instead of just id?
     socket.emit('joinSuccess', {players: players, id: socket.id} );
   });
 
@@ -49,7 +49,7 @@ io.on('connection', function(socket){
 
   socket.on('disconnect', function(){
     Player.delete(socket.id, players);
-    console.log(players);
+    socket.broadcast.emit('playerDisconnected', {id: socket.id});
   });
 });
 

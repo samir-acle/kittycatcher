@@ -8,3 +8,10 @@ helpers.getPlayerByID = function(id, array) {
   });
   return player;
 };
+
+helpers.getIndexByID = function(id, array) {
+  var playerIndex = array.findIndex(function(el, index, array){
+    return el.id === id;
+  });
+  return playerIndex;
+};

@@ -30,22 +30,20 @@ Game.prototype.init = function(){
     console.log('in create');
     //TODO: listen for joined game and initial position
     // game.world.setBounds(0, 0, 1920, 1920);
-    // game.physics.startSystem(Phaser.Physics.P2JS);
+    game.physics.startSystem(Phaser.Physics.ARCADE);
+    //disbale automatic pausing of the game if leave the tab
+    game.stage.disableVisibilityChange = true;
+    cursors = game.input.keyboard.createCursorKeys();
 
     // loop through players and create
     self.playersArray.forEach(function(player){
       player.sprite = game.add.sprite(player.x, player.y, player.type);
-      game.physics.arcade.enable(player.sprite);
+      game.physics.enable(player.sprite, Phaser.Physics.ARCADE);
       player.sprite.body.collideWorldBounds = true;
     });
 
     // player = game.add.sprite(game.world.centerX, game.world.centerY, 'cat');
     // game.physics.p2.enable(player);
-
-    cursors = game.input.keyboard.createCursorKeys();
-
-    //disbale automatic pausing of the game if leave the tab
-    game.stage.disableVisibilityChange = true;
 
     // game.camera.follow(player);
     setSocketListeners();
