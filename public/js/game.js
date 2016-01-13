@@ -45,6 +45,7 @@ Game.prototype.init = function(){
 
     // loop through players and create
     self.playersArray.forEach(function(player){
+      console.log(player);
       self.addSprite(player);
     });
 
@@ -56,29 +57,57 @@ Game.prototype.init = function(){
     setSocketListeners();
   }
 
+//TODO: refactor - dont need data.id if change on server, but whats best practice?
   function setSocketListeners(){
     self.socket.on('playerMovement:left', function(data){
       var movingPlayer = helpers.getPlayerByID(data.id, self.playersArray);
       movingPlayer.sprite.x += self.speed * -5;
-      // self.socket.emit('new position', {x: player.body.x, y: player.body.y});
+      //TODO: update position on server side then send back?
+      if (self.currentPlayer.id === data.id) {
+        self.socket.emit('position:update', {
+          id: data.id,
+          x: movingPlayer.sprite.x,
+          y: movingPlayer.sprite.y
+        });
+      }
     });
 
     self.socket.on('playerMovement:right', function(data){
       var movingPlayer = helpers.getPlayerByID(data.id, self.playersArray);
       movingPlayer.sprite.x += self.speed * 5;
-      // self.socket.emit('new position', {x: player.body.x, y: player.body.y});
+
+      if (self.currentPlayer.id === data.id) {
+        self.socket.emit('position:update', {
+          id: data.id,
+          x: movingPlayer.sprite.x,
+          y: movingPlayer.sprite.y
+        });
+      }
     });
 
     self.socket.on('playerMovement:up', function(data){
       var movingPlayer = helpers.getPlayerByID(data.id, self.playersArray);
       movingPlayer.sprite.y += self.speed * -5;
-      // self.socket.emit('new position', {x: player.body.x, y: player.body.y});
+
+      if (self.currentPlayer.id === data.id) {
+        self.socket.emit('position:update', {
+          id: data.id,
+          x: movingPlayer.sprite.x,
+          y: movingPlayer.sprite.y
+        });
+      }
     });
 
     self.socket.on('playerMovement:down', function(data){
       var movingPlayer = helpers.getPlayerByID(data.id, self.playersArray);
       movingPlayer.sprite.y += self.speed * 5;
-      // self.socket.emit('new position', {x: player.body.x, y: player.body.y});
+      if (self.currentPlayer.id === data.id) {
+        self.socket.emit('position:update', {
+          id: data.id,
+          x: movingPlayer.sprite.x,
+          y: movingPlayer.sprite.y
+        });
+      }
     });
   }
 
@@ -101,6 +130,3 @@ Game.prototype.init = function(){
     // }
   }
 }
-
-
-//TODO: issue with movement - since using velocity,when holding down, browsers stop
