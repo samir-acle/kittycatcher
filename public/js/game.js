@@ -16,6 +16,7 @@ var Game = function(data){
   this.socket = data.socket;
   this.players = [];
   this.socketID = data.data.id;
+  this.checkingCollision = false;
   // this.isHuman = false;
 };
 
@@ -46,6 +47,7 @@ Game.prototype.addKeyboard = function(){
 Game.prototype.playPreloadFunction = function(){  //TODO: do these need to be proto or can be class methods?
   this.game.load.image('cat', '../images/domestic2.svg');
   this.game.load.image('human', '../images/human.png');
+  this.game.load.audio('meow', '../audio/meow.mp3');
 };
 
 Game.prototype.playCreateFunction = function(){
@@ -53,6 +55,11 @@ Game.prototype.playCreateFunction = function(){
   this.game.physics.startSystem(Phaser.Physics.ARCADE);
   this.game.stage.disableVisibilityChange = true;
   this.cursors = this.addKeyboard();
+
+  //load sounds
+  this.meow = this.game.add.audio('meow');
+
+  //DECODE??
 
   //create groups
   this.others = this.game.add.group();
@@ -121,11 +128,21 @@ Game.prototype.setSocketListeners = function(){
   this.socket.on('gameUpdated:add', this.addPlayer.bind(this));
   this.socket.on('gameUpdated:remove', this.removePlayer.bind(this));
   this.socket.on('gameUpdated:lostHuman', this.setNewHuman.bind(this));
+  this.socket.on('gameUpdated:kill', this.killPlayer.bind(this));
+};
+
+Game.prototype.killPlayer = function(data){
+  if (this.socketID === data.id) {
+    console.log('lost');
+  }
 };
 
 Game.prototype.setNewHuman = function(data){
   console.log('data for new hum', data);
   var newHuman = helpers.getPlayerByID(data.human, this.players);
+
+  //TODO: need to fix new human so pics another one if other player has already disconnected
+
   console.log('new human before', newHuman);
   newHuman.type = 'human';
   console.log('new human', newHuman);
@@ -143,24 +160,31 @@ Game.prototype.updatePlayer = function(player){
     x : player.player.x,
     y : player.player.y
   });
-  this.checkHumanOthersCollisions();
+  if (this.checkIfHuman()){
+    this.checkHumanOthersCollisions();
+  }
 };
 
 Game.prototype.removePlayer = function(data){
   var playerIndex = helpers.getIndexByID(data.id, this.players);
 
   if (playerIndex > -1) {
-    this.players[playerIndex].sprite.destroy();
+    this.others.remove(this.players[playerIndex].sprite, true);
+    console.log('sprite destroyed');
     this.players.splice(playerIndex, 1);
   }
 };
 
 Game.prototype.checkHumanOthersCollisions = function(){
   //collide separates, overlap does not, try both for fun
-  this.game.physics.arcade.overlap(this.human.sprite, this.others, function(currentSprite, otherSprite){
+  console.log(this.socketID);
+  var overlap = this.game.physics.arcade.overlap(this.human.sprite, this.others, function(currentSprite, otherSprite){
     console.log('player and human collide');
-    this.socket.emit('collision', {id: otherSprite.id});
+    this.meow.play();
+    this.socket.emit('collision:human', {id: otherSprite.id});
   }.bind(this));
+
+  console.log(overlap);
 };
 
 Game.prototype.storeHuman = function(){
