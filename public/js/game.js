@@ -1,7 +1,6 @@
 "use strict";
 
 var Game = function(data){
-  console.log('data', data);
   this.WIDTH = data.data.width;
   this.HEIGHT = data.data.height;
   this.states = [
@@ -17,6 +16,15 @@ var Game = function(data){
   this.socket = data.socket;
   this.players = [];
   this.socketID = data.data.id;
+  this.isHuman = false;
+};
+
+Game.prototype.checkIfHuman = function(){
+  if (this.currentPlayer.type === 'human'){
+    this.isHuman = true;
+  } else {
+    this.isHuman = false;
+  }
 };
 
 Game.prototype.init = function(){
@@ -45,6 +53,8 @@ Game.prototype.playCreateFunction = function(){
   this.game.stage.disableVisibilityChange = true;
   this.cursors = this.addKeyboard();
 
+  this.createGroups();
+
   this.playersData.forEach(function(player){
     this.addPlayer({player: player});
   }, this);
@@ -59,27 +69,32 @@ Game.prototype.playCreateFunction = function(){
   this.setSocketListeners();
 
   //grouping by other players
-  this.createGroups();
   this.storeHuman();
-  this.addMask(this.game);
 };
 
 Game.prototype.createGroups = function(){
   this.others = this.game.add.group();
+  this.allPlayers = this.game.add.group();
 
-  this.players.forEach(function(player){
-    if(player.id !== this.socketID){
-      this.others.add(player.sprite);
-    }
-  }, this);
+  // this.players.forEach(function(player){
+  //   if(player.id !== this.socketID){
+  //     this.others.add(player.sprite);
+  //   }
+  //   this.allPlayers.add(player.sprite);
+  // }, this);
+};
 
-  console.log(this.others);
-}
+Game.prototype.updateOthers = function(player){
+  if(player.id !== this.socketID){
+    this.others.add(player.sprite);
+  }
+};
 
 Game.prototype.addPlayer = function(player){
     var newPlayer = new Player(player.player);
     newPlayer.addSprite(this.game);
     this.players.push(newPlayer);
+    this.updateOthers(newPlayer);
 };
 
 Game.prototype.playUpdateFunction = function(){
@@ -98,19 +113,26 @@ Game.prototype.playUpdateFunction = function(){
   this.storeHuman();
   this.game.world.bringToTop(this.human.sprite);
 
+  if (!this.mask) return;
   this.mask.x = this.human.sprite.x - (1.5 * this.human.sprite.width);
   this.mask.y = this.human.sprite.y - (1.5 * this.human.sprite.height);
+
+  console.log(this.human);
 };
 
 Game.prototype.setSocketListeners = function(){
   this.socket.on('gameUpdated:movement', this.updatePlayer.bind(this));
   this.socket.on('gameUpdated:add', this.addPlayer.bind(this));
   this.socket.on('gameUpdated:remove', this.removePlayer.bind(this));
-  this.socket.on('gameUpdated:newHuman', this.setNewHuman.bind(this));
+  this.socket.on('gameUpdated:lostHuman', this.setNewHuman.bind(this));
 };
 
 Game.prototype.setNewHuman = function(data){
   var newHuman = helpers.findById(data.human, this.players);
+  newHuman.type = 'human';
+  //TODO: make sure x and y stay the same
+  newHuman.sprite.destroy();
+  this.addPlayer(newHuman);
 };
 
 Game.prototype.updatePlayer = function(player){
@@ -123,7 +145,6 @@ Game.prototype.updatePlayer = function(player){
 };
 
 Game.prototype.removePlayer = function(data){
-  console.log('remove data', data);
   var playerIndex = helpers.getIndexByID(data.id, this.players);
 
   if (playerIndex > -1) {
@@ -133,11 +154,10 @@ Game.prototype.removePlayer = function(data){
 };
 
 Game.prototype.checkCollisions = function(){
-  //collide separates, overlap does not, try both for fun
-  console.log('checking collisions');
-  this.game.physics.arcade.overlap(this.currentPlayer.sprite, this.others, function(currentSprite, otherSprite){
-    this.socket.emit('collision', {id: otherSprite.id});
-  }.bind(this));
+  // //collide separates, overlap does not, try both for fun
+  // this.game.physics.arcade.overlap(this.currentPlayer.sprite, this.others, function(currentSprite, otherSprite){
+  //   this.socket.emit('collision', {id: otherSprite.id});
+  // }.bind(this));
 };
 
 Game.prototype.storeHuman = function(){
@@ -146,15 +166,26 @@ Game.prototype.storeHuman = function(){
       this.human = this.players[i];
     }
   }
+  this.checkIfHuman();
+  this.addMask();
 };
 
 //TODO: since bringin human to font, get rid of storing mask in game object?
 //TODO: or change so only mask human and bring to font?
-Game.prototype.addMask = function(game){
-  this.mask = game.add.graphics(0,0);
-  this.mask.beginFill(0xffffff);
-  this.mask.drawCircle(200, 200, 200);
-  this.human.mask = this.mask;
+Game.prototype.addMask = function(){
+  if (!this.isHuman) return;
+
+  this.createMask();
+
+  this.others.mask = this.mask;
   this.mask.x = 0;
   this.mask.y = 0;
 };
+
+Game.prototype.createMask = function(){
+  if (this.mask) return;
+
+  this.mask = this.game.add.graphics(0,0);
+  this.mask.beginFill(0x000000);
+  this.mask.drawCircle(200, 200, 200);
+}

@@ -106,9 +106,10 @@ io.on('connection', function(socket){
   });
 
   socket.on('disconnect', function(){
-    var deletedPlayer = Player.delete(socket.id, players);
+    var deletedPlayer = Player.delete(socket.id, players) || '';
 
     if (deletedPlayer.type === 'human'){
+      humans[clients[socket.id]] = false;
       var newHuman = players[Math.floor(Math.random() * players.length)]; //pick random player to be new human
       socket.broadcast.emit('gameUpdated:lostHuman', {human: newHuman.id});
     }
