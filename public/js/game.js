@@ -50,6 +50,8 @@ Game.prototype.playCreateFunction = function(){
   }, this);
 
   this.currentPlayer = helpers.getPlayerByID(this.socketID, this.players);
+
+  //TODO: refactor out?
   this.socket.emit('player:stats', {
     width: this.currentPlayer.sprite.width,
     height: this.currentPlayer.sprite.height
@@ -58,6 +60,8 @@ Game.prototype.playCreateFunction = function(){
 
   //grouping by other players
   this.createGroups();
+  this.storeHuman();
+  this.addMask(this.game);
 };
 
 Game.prototype.createGroups = function(){
@@ -93,12 +97,20 @@ Game.prototype.playUpdateFunction = function(){
 
   this.storeHuman();
   this.game.world.bringToTop(this.human.sprite);
+
+  this.mask.x = this.human.sprite.x - (1.5 * this.human.sprite.width);
+  this.mask.y = this.human.sprite.y - (1.5 * this.human.sprite.height);
 };
 
 Game.prototype.setSocketListeners = function(){
   this.socket.on('gameUpdated:movement', this.updatePlayer.bind(this));
   this.socket.on('gameUpdated:add', this.addPlayer.bind(this));
   this.socket.on('gameUpdated:remove', this.removePlayer.bind(this));
+  this.socket.on('gameUpdated:newHuman', this.setNewHuman.bind(this));
+};
+
+Game.prototype.setNewHuman = function(data){
+  var newHuman = helpers.findById(data.human, this.players);
 };
 
 Game.prototype.updatePlayer = function(player){
@@ -134,4 +146,15 @@ Game.prototype.storeHuman = function(){
       this.human = this.players[i];
     }
   }
+};
+
+//TODO: since bringin human to font, get rid of storing mask in game object?
+//TODO: or change so only mask human and bring to font?
+Game.prototype.addMask = function(game){
+  this.mask = game.add.graphics(0,0);
+  this.mask.beginFill(0xffffff);
+  this.mask.drawCircle(200, 200, 200);
+  this.human.mask = this.mask;
+  this.mask.x = 0;
+  this.mask.y = 0;
 };

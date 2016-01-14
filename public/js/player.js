@@ -9,6 +9,8 @@ var Player = function(data){
   this.type = data.type;
 };
 
+//TODO: fix so this.x i iupdated and not only initial pos
+
 Player.prototype.addSprite = function(game){
   this.sprite = game.add.sprite(this.x, this.y, this.type);
   game.physics.enable(this.sprite, Phaser.Physics.ARCADE);
@@ -22,6 +24,8 @@ Player.prototype.addSprite = function(game){
 Player.prototype.setPosition = function(pos){
   this.sprite.x = pos.x;
   this.sprite.y = pos.y;
+  console.log('x',this.x);
+  console.log('sprite',this.sprite.x);
   return pos;//TODO: need return?
 };
 
