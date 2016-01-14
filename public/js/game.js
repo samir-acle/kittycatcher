@@ -49,6 +49,8 @@ Game.prototype.playCreateFunction = function(){
   }, this);
 
   this.currentPlayer = helpers.getPlayerByID(this.socketID, this.players);
+
+  //TODO: refactor out?
   this.socket.emit('player:stats', {
     width: this.currentPlayer.sprite.width,
     height: this.currentPlayer.sprite.height
@@ -57,6 +59,7 @@ Game.prototype.playCreateFunction = function(){
 
   //grouping by other players
   this.createGroups();
+  this.addMask(this.game);
 };
 
 Game.prototype.createGroups = function(){
@@ -89,6 +92,11 @@ Game.prototype.playUpdateFunction = function(){
   } else if (this.cursors.down.isDown){
     this.socket.emit('keyboard:down');
   }
+
+  this.mask.x = this.currentPlayer.sprite.x - (1.5 * this.currentPlayer.sprite.width);
+  this.mask.y = this.currentPlayer.sprite.y - (1.5 * this.currentPlayer.sprite.height);
+
+  this.game.world.bringToTop(this.currentPlayer);
 };
 
 Game.prototype.setSocketListeners = function(){
@@ -122,4 +130,14 @@ Game.prototype.checkCollisions = function(){
   this.game.physics.arcade.overlap(this.currentPlayer.sprite, this.others, function(currentSprite, otherSprite){
     this.socket.emit('collision', {id: otherSprite.id});
   }.bind(this));
+};
+
+Game.prototype.addMask = function(game){
+  this.mask = game.add.graphics(0,0);
+  this.mask.beginFill(0xffffff);
+  this.mask.drawCircle(200, 200, 200);
+  this.others.mask = this.mask;
+  this.currentPlayer.hasMask = true;
+  this.mask.x = this.currentPlayer.sprite.x;
+  this.mask.y = this.currentPlayer.sprite.y;
 };
