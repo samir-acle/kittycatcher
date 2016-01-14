@@ -136,7 +136,9 @@ Game.prototype.killPlayer = function(data){
     console.log('lost');
   }
 
-  this.meow.play();
+  if(!this.meow.isPlaying){
+    this.meow.play();
+  }
 };
 
 Game.prototype.setNewHuman = function(data){
@@ -182,9 +184,6 @@ Game.prototype.checkHumanOthersCollisions = function(){
   console.log(this.socketID);
   var overlap = this.game.physics.arcade.overlap(this.human.sprite, this.others, function(currentSprite, otherSprite){
     console.log('player and human collide');
-
-    this.meow.play();
-
     this.socket.emit('collision:human', {id: otherSprite.id});
   }.bind(this));
 
