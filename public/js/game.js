@@ -124,11 +124,17 @@ Game.prototype.setSocketListeners = function(){
 };
 
 Game.prototype.setNewHuman = function(data){
-  var newHuman = helpers.findById(data.human, this.players);
+  console.log('data for new hum', data);
+  var newHuman = helpers.getPlayerByID(data.human, this.players);
+  console.log('new human before', newHuman);
   newHuman.type = 'human';
+  console.log('new human', newHuman);
   //TODO: make sure x and y stay the same
   newHuman.sprite.destroy();
-  this.addPlayer(newHuman);
+  console.log('after sprite destroy', newHuman);
+  newHuman.addSprite(this.game);
+  this.mask = '';
+  this.storeHuman();
 };
 
 Game.prototype.updatePlayer = function(player){

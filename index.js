@@ -15,6 +15,7 @@ var humans = {};
 var games = [];
 var MAX_PLAYERS = 10;
 var room;
+var collidedCount = 0;
 
 app.use(express.static(__dirname + '/public'));
 
@@ -102,19 +103,28 @@ io.on('connection', function(socket){
   });
 
   socket.on('collision', function(){
-    console.log('collided');
+    collidedCount += 1;
+    console.log(collidedCount);
   });
 
   socket.on('disconnect', function(){
     var deletedPlayer = Player.delete(socket.id, players) || '';
-
-    if (deletedPlayer.type === 'human'){
-      humans[clients[socket.id]] = false;
-      var newHuman = players[Math.floor(Math.random() * players.length)]; //pick random player to be new human
-      socket.broadcast.emit('gameUpdated:lostHuman', {human: newHuman.id});
-    }
+    console.log('del play', deletedPlayer);
+    console.log(deletedPlayer.type === 'human');
 
     socket.broadcast.emit('gameUpdated:remove', {id: socket.id});
+
+    if (!deletedPlayer) return;
+
+    if (deletedPlayer[0].type === 'human'){
+      console.log('human deleted');
+      humans[clients[socket.id]] = false;
+      var newHuman = players[Math.floor(Math.random() * players.length)];
+      newHuman.type = 'human';
+      humans[clients[socket.id]] = true; //pick random player to be new human
+      socket.broadcast.emit('gameUpdated:lostHuman', {human: newHuman.id});
+      console.log('human deleted');
+    }
   });
 });
 
