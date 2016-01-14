@@ -16,14 +16,14 @@ var Game = function(data){
   this.socket = data.socket;
   this.players = [];
   this.socketID = data.data.id;
-  this.isHuman = false;
+  // this.isHuman = false;
 };
 
 Game.prototype.checkIfHuman = function(){
   if (this.currentPlayer.type === 'human'){
-    this.isHuman = true;
+    return true;
   } else {
-    this.isHuman = false;
+    return false;
   }
 };
 
@@ -49,41 +49,36 @@ Game.prototype.playPreloadFunction = function(){  //TODO: do these need to be pr
 };
 
 Game.prototype.playCreateFunction = function(){
+  //set up game world with keyboard inputs
   this.game.physics.startSystem(Phaser.Physics.ARCADE);
   this.game.stage.disableVisibilityChange = true;
   this.cursors = this.addKeyboard();
 
-  this.createGroups();
+  //create groups
+  this.others = this.game.add.group();
+  this.allPlayers = this.game.add.group();
 
+  //add players to map
   this.playersData.forEach(function(player){
     this.addPlayer({player: player});
   }, this);
 
+  //set player of local browser
   this.currentPlayer = helpers.getPlayerByID(this.socketID, this.players);
 
   //TODO: refactor out?
+  //send player stats to server for game logic purposes
   this.socket.emit('player:stats', {
     width: this.currentPlayer.sprite.width,
     height: this.currentPlayer.sprite.height
   });
   this.setSocketListeners();
 
-  //grouping by other players
+  //keep track of who is the human for easy retrieval
   this.storeHuman();
 };
 
-Game.prototype.createGroups = function(){
-  this.others = this.game.add.group();
-  this.allPlayers = this.game.add.group();
-
-  // this.players.forEach(function(player){
-  //   if(player.id !== this.socketID){
-  //     this.others.add(player.sprite);
-  //   }
-  //   this.allPlayers.add(player.sprite);
-  // }, this);
-};
-
+//TODO: combine below functions?
 Game.prototype.updateOthers = function(player){
   if(player.id !== this.socketID){
     this.others.add(player.sprite);
@@ -110,14 +105,15 @@ Game.prototype.playUpdateFunction = function(){
     this.socket.emit('keyboard:down');
   }
 
-  this.storeHuman();
+  // this.storeHuman();
+  //ensure human always top layer of canvas
   this.game.world.bringToTop(this.human.sprite);
 
   if (!this.mask) return;
-  this.mask.x = this.human.sprite.x - (1.5 * this.human.sprite.width);
-  this.mask.y = this.human.sprite.y - (1.5 * this.human.sprite.height);
 
-  console.log(this.human);
+  //set mask to follow human
+  this.mask.x = Math.floor(this.human.sprite.x - this.human.sprite.width / 2);
+  this.mask.y = Math.floor(this.human.sprite.y - this.human.sprite.height / 2);
 };
 
 Game.prototype.setSocketListeners = function(){
@@ -141,7 +137,7 @@ Game.prototype.updatePlayer = function(player){
     x : player.player.x,
     y : player.player.y
   });
-  this.checkCollisions();
+  this.checkHumanOthersCollisions();
 };
 
 Game.prototype.removePlayer = function(data){
@@ -153,11 +149,12 @@ Game.prototype.removePlayer = function(data){
   }
 };
 
-Game.prototype.checkCollisions = function(){
-  // //collide separates, overlap does not, try both for fun
-  // this.game.physics.arcade.overlap(this.currentPlayer.sprite, this.others, function(currentSprite, otherSprite){
-  //   this.socket.emit('collision', {id: otherSprite.id});
-  // }.bind(this));
+Game.prototype.checkHumanOthersCollisions = function(){
+  //collide separates, overlap does not, try both for fun
+  this.game.physics.arcade.overlap(this.human.sprite, this.others, function(currentSprite, otherSprite){
+    console.log('player and human collide');
+    this.socket.emit('collision', {id: otherSprite.id});
+  }.bind(this));
 };
 
 Game.prototype.storeHuman = function(){
@@ -166,18 +163,24 @@ Game.prototype.storeHuman = function(){
       this.human = this.players[i];
     }
   }
-  this.checkIfHuman();
+  //TODO: do i nee to store this or just return as variable, only used when settting mask
+  // this.checkIfHuman();
+
+  if (!this.checkIfHuman()) return;
   this.addMask();
 };
 
 //TODO: since bringin human to font, get rid of storing mask in game object?
 //TODO: or change so only mask human and bring to font?
 Game.prototype.addMask = function(){
-  if (!this.isHuman) return;
+  // if (!this.isHuman) return;
 
   this.createMask();
+  console.log('adding mask');
 
   this.others.mask = this.mask;
+
+  //TODO: update positioning
   this.mask.x = 0;
   this.mask.y = 0;
 };
@@ -188,4 +191,4 @@ Game.prototype.createMask = function(){
   this.mask = this.game.add.graphics(0,0);
   this.mask.beginFill(0x000000);
   this.mask.drawCircle(200, 200, 200);
-}
+};

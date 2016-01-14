@@ -26,8 +26,6 @@ Player.prototype.setPosition = function(pos){
   this.sprite.y = pos.y;
   this.x = this.sprite.x;
   this.y = this.sprite.y;
-  console.log('x',this.x);
-  console.log('sprite',this.sprite.x);
   return pos;//TODO: need return?
 };
 
