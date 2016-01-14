@@ -112,8 +112,8 @@ Game.prototype.playUpdateFunction = function(){
   if (!this.mask) return;
 
   //set mask to follow human
-  this.mask.x = Math.floor(this.human.sprite.x - this.human.sprite.width / 2);
-  this.mask.y = Math.floor(this.human.sprite.y - this.human.sprite.height / 2);
+  this.mask.x = this.human.sprite.x;
+  this.mask.y = this.human.sprite.y;
 };
 
 Game.prototype.setSocketListeners = function(){
@@ -179,16 +179,14 @@ Game.prototype.addMask = function(){
   console.log('adding mask');
 
   this.others.mask = this.mask;
-
-  //TODO: update positioning
-  this.mask.x = 0;
-  this.mask.y = 0;
 };
 
 Game.prototype.createMask = function(){
   if (this.mask) return;
 
+
   this.mask = this.game.add.graphics(0,0);
   this.mask.beginFill(0x000000);
-  this.mask.drawCircle(200, 200, 200);
+  this.mask.drawCircle(this.human.sprite.x / 2, this.human.sprite.y / 2, 200);
+  console.log('this',this);
 };
