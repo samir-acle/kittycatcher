@@ -1,9 +1,9 @@
-var Player = function(id){
+var Player = function(id, type){
   // this.userID = userID;
   this.id = id;
   this.x = Math.floor(Math.random() * 200);
   this.y = Math.floor(Math.random() * 200);
-  this.type = 'cat';
+  this.type = type;
 };
 
 Player.delete = function(id, players){

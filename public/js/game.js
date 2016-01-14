@@ -37,6 +37,7 @@ Game.prototype.addKeyboard = function(){
 
 Game.prototype.playPreloadFunction = function(){  //TODO: do these need to be proto or can be class methods?
   this.game.load.image('cat', '../images/domestic2.svg');
+  this.game.load.image('human', '../images/human.png');
 };
 
 Game.prototype.playCreateFunction = function(){
@@ -89,6 +90,9 @@ Game.prototype.playUpdateFunction = function(){
   } else if (this.cursors.down.isDown){
     this.socket.emit('keyboard:down');
   }
+
+  this.storeHuman();
+  this.game.world.bringToTop(this.human.sprite);
 };
 
 Game.prototype.setSocketListeners = function(){
@@ -122,4 +126,12 @@ Game.prototype.checkCollisions = function(){
   this.game.physics.arcade.overlap(this.currentPlayer.sprite, this.others, function(currentSprite, otherSprite){
     this.socket.emit('collision', {id: otherSprite.id});
   }.bind(this));
+};
+
+Game.prototype.storeHuman = function(){
+  for (var i = 0; i < this.players.length; i++){
+    if (this.players[i].type === 'human') {
+      this.human = this.players[i];
+    }
+  }
 };

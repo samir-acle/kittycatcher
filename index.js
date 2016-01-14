@@ -8,7 +8,13 @@ var GAME_HEIGHT = 600;
 var GAME_WIDTH = 800;
 var STEP = 5;
 var port = process.env.PORT || 3000;
-//var clients = [];
+
+var roomPlayers = {};
+var clients = {};
+var humans = {};
+var games = [];
+var MAX_PLAYERS = 10;
+var room;
 
 app.use(express.static(__dirname + '/public'));
 
@@ -20,8 +26,29 @@ app.get('/', function(req, res){
 //TODO: client[soket.id] = socket - need or no?
 io.on('connection', function(socket){
   socket.on('join:request', function(){
-    var newPlayer = new Player(socket.id);
+    //is there an empty room?
+    //helperfunction to iterate through rooms until find one that has < MAX_PLAYERS
+    //return -1 or index
+    //if so, join it
+    //if not create new room
+    //keep track of rooms and # of players and if has human (later - single room for now)
+    room = 'first room';
+    if (!games) {
+      games.push(room);
+    }
+
+    clients[socket.id] = room;
+    roomPlayers[room] = roomPlayers[room] ? roomPlayers[room] + 1 : 0;
+    var character;
+    if (!humans[room]){
+      character = 'human';
+      humans[room] = true;
+    } else {
+      character = 'cat';
+    }
+    var newPlayer = new Player(socket.id, character);
     players.push(newPlayer);
+    console.log(newPlayer);
 
     //TODO: should i send player object instead of just id?
     //TODO: combine with broadcast to make dry- on client side?

@@ -6,11 +6,11 @@ var Player = function(data){
   this.x = data.x;
   this.y = data.y;
   this.speed = 1;
-  this.animal = data.type;
+  this.type = data.type;
 };
 
 Player.prototype.addSprite = function(game){
-  this.sprite = game.add.sprite(this.x, this.y, this.animal);
+  this.sprite = game.add.sprite(this.x, this.y, this.type);
   game.physics.enable(this.sprite, Phaser.Physics.ARCADE);
   this.sprite.body.collideWorldBounds = true;
   this.sprite.id = this.id;
