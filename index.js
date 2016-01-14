@@ -102,9 +102,11 @@ io.on('connection', function(socket){
     io.emit('gameUpdated:movement', {player: movingPlayer});
   });
 
-  socket.on('collision', function(){
-    collidedCount += 1;
-    console.log(collidedCount);
+  socket.on('collision:human', function(data){
+    // collidedCount += 1;
+    console.log('collision');
+    console.log(data);
+    io.emit('gameUpdated:kill', {id: data.id});
   });
 
   socket.on('disconnect', function(){
