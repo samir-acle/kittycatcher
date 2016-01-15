@@ -201,18 +201,29 @@ Game.prototype.storeHuman = function(){
 
   //added here so only happens on actual keypress
   this.marco.onDown.add(function(){
-    this.others.mask = this.game.add.graphics(0,0);// this.mask = null;
-    this.others.mask.beginFill(0xffffff);
-    this.others.mask.drawRect(0,0,this.WIDTH,this.HEIGHT);
-
-    this.mask.clear();
-    var marcoTimeoutID = window.setTimeout(function(){
-      this.others.mask.clear();
-      this.addMask();
-    }.bind(this), 400);
+    if (!this.preventMarco){
+      this.marcoPolo();
+    }
   }, this);
 };
 
+Game.prototype.marcoPolo = function(){
+  this.others.mask = this.game.add.graphics(0,0);// this.mask = null;
+  this.others.mask.beginFill(0xffffff);
+  this.others.mask.drawRect(0,0,this.WIDTH,this.HEIGHT);
+  var preventMarcoTimeoutID = window.setTimeout(function(){
+    this.preventMarco = false;
+  }.bind(this), 5000);
+
+  if (this.preventMarco) return
+
+  this.mask.clear();
+  var marcoTimeoutID = window.setTimeout(function(){
+    this.others.mask.clear();
+    this.addMask();
+  }.bind(this), 400);
+  this.preventMarco = true;
+};
 //TODO: since bringin human to font, get rid of storing mask in game object?
 //TODO: or change so only mask human and bring to font?
 Game.prototype.addMask = function(){
