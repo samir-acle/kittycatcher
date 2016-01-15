@@ -5,8 +5,8 @@ var mongoose = require('mongoose');
 mongoose.connect(process.env.MONGOLAB_URI || "mongodb://localhost/scores");
 var app = express();
 
-var server = require('http').Server(app);
-var io = require('socket.io')(server);
+var server = require('http').createServer(app);
+var io = require('socket.io').listen(server);
 
 var Player = require('./models/player.js');
 var ScoreModel = require('./models/score');
@@ -33,12 +33,12 @@ app.get('/', function(req, res){
   res.sendFile(__dirname + '/index.html');
 });
 
-//for testing database
-app.get('/scores', function(req,res){
-  ScoreModel.find({}, function(err,docs){
-    res.json(docs);
-  });
-});
+// //for testing database
+// app.get('/scores', function(req,res){
+//   ScoreModel.find({}, function(err,docs){
+//     res.json(docs);
+//   });
+// });
 
 //TODO: encapsulate io in game object andmove to new file
 //TODO: client[soket.id] = socket - need or no?
