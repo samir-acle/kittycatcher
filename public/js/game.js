@@ -126,27 +126,19 @@ Game.prototype.playUpdateFunction = function(){
     this.mask.y = this.human.y + (this.human.sprite.height / 2);
   }
 
-  if (this.checkIfHuman()){
-    var catTime = moment().diff(this.catScoreTime, 'seconds');
-    console.log(catTime);
-    if (catTime > 2) {
-      this.socket.emit('catPoints');
-      this.catScoreTime = moment();
-    }
-  }
-
-  var humanTime = moment().diff(this.humanResetTime, 'seconds');
-  if (humanTime > 20) {
-    // this.socket.emit('catPoints');
-    // this.catScoreTime = moment();
-    console.log('reset human');
-    this.humanResetTime = moment();
-  }
+  if (!this.checkIfHuman()) return;
 
   var catTime = moment().diff(this.catScoreTime, 'seconds');
   if (catTime > 2) {
     this.socket.emit('catPoints');
     this.catScoreTime = moment();
+  }
+
+
+  var humanTime = moment().diff(this.humanResetTime, 'seconds');
+  if (humanTime > 20) {
+    this.socket.emit('resetHuman');
+    this.humanResetTime = moment();
   }
 };
 
