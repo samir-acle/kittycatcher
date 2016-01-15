@@ -144,6 +144,24 @@ io.on('connection', function(socket){
     io.emit('gameUpdated:kill', {id: data.id});
   });
 
+  socket.on('marcoPolo', function(data){
+    // collidedCount += 1;
+    console.log('IN marcoPolo');
+    console.log(data);
+    ScoreModel.find({type: 'human'}, function(err,docs){
+      docs[0].score -= marcoScore;
+      docs[0].score = docs[0].score < 0 ? 0 : docs[0].score;
+      docs[0].save(function(err){
+        if (err) {
+          console.log('error');
+        } else {
+          console.log('no error');
+          io.emit('gameUpdated:humanScore',{score: docs[0].score});
+        }
+      });
+    });
+  });
+
   socket.on('disconnect', function(){
     var deletedPlayer = Player.delete(socket.id, players) || '';
     console.log('del play', deletedPlayer);
