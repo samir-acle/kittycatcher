@@ -1,8 +1,10 @@
 var express = require('express');
-var app = express();
+var mongoose = require('mongoose')
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
 var Player = require('./models/player.js');
+var app = express();
+mongoose.connect('mongodb://localhost/scores');
 var players = [];
 var GAME_HEIGHT = 600;
 var GAME_WIDTH = 800;

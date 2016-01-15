@@ -219,7 +219,7 @@ Game.prototype.addMask = function(){
   if (!this.mask.filling){
     this.mask = this.game.add.graphics(0,0);
     this.mask.beginFill(0xffffff);
-    this.mask.drawCircle(0, 0, 200);
+    this.mask.drawEllipse(0, 0, this.human.sprite.width, this.human.sprite.height);
   }
 
   this.others.mask = this.mask;
