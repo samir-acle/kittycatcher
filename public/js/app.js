@@ -11,6 +11,7 @@ $(document).ready(function(){
     game = new Game({data: data, socket: socket});
     game.init();
     setInitialScores(data.scores);
+    console.log('time', game.catScoreTime);
   });
 
   function setInitialScores(scores){

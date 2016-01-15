@@ -17,7 +17,7 @@ var Game = function(data){
   this.players = [];
   this.socketID = data.data.id;
   this.checkingCollision = false;
-  // this.isHuman = false;
+  this.catScoreTime = moment();
 };
 
 Game.prototype.checkIfHuman = function(){
@@ -120,10 +120,16 @@ Game.prototype.playUpdateFunction = function(){
   //ensure human always top layer of canvas
   this.game.world.bringToTop(this.human.sprite);
 
-  if (this.mask) {
   //set mask to follow human
+  if (this.mask) {
     this.mask.x = this.human.x + (this.human.sprite.width / 2);
     this.mask.y = this.human.y + (this.human.sprite.height / 2);
+  }
+
+  var catTime = moment().diff(this.catScoreTime, 'seconds');
+  if (catTime > 2) {
+    this.socket.emit('catPoints');
+    this.catScoreTime = moment();
   }
 };
 
@@ -181,6 +187,7 @@ Game.prototype.checkHumanOthersCollisions = function(){
   console.log(this.socketID);
   var overlap = this.game.physics.arcade.overlap(this.human.sprite, this.others, function(currentSprite, otherSprite){
     console.log('player and human collide');
+    this.catScoreTime = moment();
     this.socket.emit('catCaught', {id: otherSprite.id});
   }.bind(this));
 
