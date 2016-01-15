@@ -136,10 +136,17 @@ Game.prototype.playUpdateFunction = function(){
   }
 
   var humanTime = moment().diff(this.humanResetTime, 'seconds');
-  if (catTime > 20) {
+  if (humanTime > 20) {
     // this.socket.emit('catPoints');
     // this.catScoreTime = moment();
     console.log('reset human');
+    this.humanResetTime = moment();
+  }
+
+  var catTime = moment().diff(this.catScoreTime, 'seconds');
+  if (catTime > 2) {
+    this.socket.emit('catPoints');
+    this.catScoreTime = moment();
   }
 };
 

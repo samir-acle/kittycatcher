@@ -165,7 +165,7 @@ io.on('connection', function(socket){
   socket.on('catPoints', function(){
     ScoreModel.find({type: 'cat'}, function(err,docs){
       var points = players.length === 0 ? 0 : players.length - 1;
-      docs[0].score += players.length - 1;
+      docs[0].score += points;
       docs[0].save(function(err){
         if (err) {
           console.log('error');
