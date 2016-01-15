@@ -1,5 +1,5 @@
 var mongoose = require('mongoose');
-mongoose.connect('mongodb://localhost/scores');
+mongoose.connect(process.env.MONGOLAB_URI || "mongodb://localhost/scores");
 var ScoreModel = require("../models/score");
 
 ScoreModel.remove({}, function(err){
