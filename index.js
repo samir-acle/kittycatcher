@@ -125,9 +125,9 @@ io.on('connection', function(socket){
     io.emit('gameUpdated:movement', {player: movingPlayer});
   });
 
-  socket.on('collision:human', function(data){
+  socket.on('catCaught', function(data){
     // collidedCount += 1;
-    console.log('collision');
+    console.log('IN collision:human');
     console.log(data);
     ScoreModel.find({type: 'human'}, function(err,docs){
       docs[0].score += collisionScore;
