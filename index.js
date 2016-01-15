@@ -1,7 +1,8 @@
 var express = require('express');
 var mongoose = require('mongoose');
 
-mongoose.connect('mongodb://localhost/scores');
+
+mongoose.connect(process.env.MONGOLAB_URI || "mongodb://localhost/scores");
 var app = express();
 
 var server = require('http').Server(app);
@@ -32,6 +33,7 @@ app.get('/', function(req, res){
   res.sendFile(__dirname + '/index.html');
 });
 
+//for testing database
 app.get('/scores', function(req,res){
   ScoreModel.find({}, function(err,docs){
     res.json(docs);
