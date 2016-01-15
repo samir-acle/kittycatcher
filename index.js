@@ -47,7 +47,7 @@ io.on('connection', function(socket){
     } else {
       character = 'cat';
     }
-    var newPlayer = new Player(socket.id, character);
+    var newPlayer = new Player(socket.id, character, GAME_WIDTH, GAME_HEIGHT);
     players.push(newPlayer);
     console.log(newPlayer);
 

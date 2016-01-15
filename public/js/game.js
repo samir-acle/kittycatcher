@@ -40,13 +40,10 @@ Game.prototype.addStates = function(){
   }, this);
 };
 
-Game.prototype.addKeyboard = function(){
-  return this.game.input.keyboard.createCursorKeys();
-};
-
 Game.prototype.playPreloadFunction = function(){  //TODO: do these need to be proto or can be class methods?
   this.game.load.image('cat', '../images/domestic2.svg');
   this.game.load.image('human', '../images/human.png');
+  this.game.load.image('grass', '../images/grass_template2.jpg');
   this.game.load.audio('meow', '../audio/meow.mp3');
 };
 
@@ -54,12 +51,19 @@ Game.prototype.playCreateFunction = function(){
   //set up game world with keyboard inputs
   this.game.physics.startSystem(Phaser.Physics.ARCADE);
   this.game.stage.disableVisibilityChange = true;
-  this.cursors = this.addKeyboard();
+
+  this.game.add.sprite(0,0,'grass');
+  //add input events
+  this.cursors = this.game.input.keyboard.createCursorKeys();
+  this.marco = this.game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+  console.log(this.cursors);
+  console.log(this.marco);
 
   //load sounds
   this.meow = this.game.add.audio('meow');
 
-  //DECODE??
+  //create mask to hide cats
+  this.mask = this.game.add.graphics(0,0);
 
   //create groups
   this.others = this.game.add.group();
@@ -116,11 +120,11 @@ Game.prototype.playUpdateFunction = function(){
   //ensure human always top layer of canvas
   this.game.world.bringToTop(this.human.sprite);
 
-  if (!this.mask) return;
-
+  if (this.mask) {
   //set mask to follow human
-  this.mask.x = this.human.sprite.x;
-  this.mask.y = this.human.sprite.y;
+    this.mask.x = this.human.x + (this.human.sprite.width / 2);
+    this.mask.y = this.human.y + (this.human.sprite.height / 2);
+  }
 };
 
 Game.prototype.setSocketListeners = function(){
@@ -135,24 +139,16 @@ Game.prototype.killPlayer = function(data){
   if (this.socketID === data.id) {
     console.log('lost');
   }
-
   this.meow.play();
 };
 
 Game.prototype.setNewHuman = function(data){
   console.log('data for new hum', data);
   var newHuman = helpers.getPlayerByID(data.human, this.players);
-
-  //TODO: need to fix new human so pics another one if other player has already disconnected
-
-  console.log('new human before', newHuman);
   newHuman.type = 'human';
-  console.log('new human', newHuman);
-  //TODO: make sure x and y stay the same
   newHuman.sprite.destroy();
-  console.log('after sprite destroy', newHuman);
   newHuman.addSprite(this.game);
-  this.mask = '';
+  this.mask.clear();
   this.storeHuman();
 };
 
@@ -202,25 +198,29 @@ Game.prototype.storeHuman = function(){
 
   if (!this.checkIfHuman()) return;
   this.addMask();
+
+  //added here so only happens on actual keypress
+  this.marco.onDown.add(function(){
+    this.others.mask = this.game.add.graphics(0,0);// this.mask = null;
+    this.others.mask.beginFill(0xffffff);
+    this.others.mask.drawRect(0,0,this.WIDTH,this.HEIGHT);
+
+    this.mask.clear();
+    var marcoTimeoutID = window.setTimeout(function(){
+      this.others.mask.clear();
+      this.addMask();
+    }.bind(this), 400);
+  }, this);
 };
 
 //TODO: since bringin human to font, get rid of storing mask in game object?
 //TODO: or change so only mask human and bring to font?
 Game.prototype.addMask = function(){
-  // if (!this.isHuman) return;
-
-  this.createMask();
-  console.log('adding mask');
+  if (!this.mask.filling){
+    this.mask = this.game.add.graphics(0,0);
+    this.mask.beginFill(0xffffff);
+    this.mask.drawCircle(0, 0, 200);
+  }
 
   this.others.mask = this.mask;
-};
-
-Game.prototype.createMask = function(){
-  if (this.mask) return;
-
-
-  this.mask = this.game.add.graphics(0,0);
-  this.mask.beginFill(0x000000);
-  this.mask.drawCircle(this.human.sprite.x / 2, this.human.sprite.y / 2, 200);
-  console.log('this',this);
 };

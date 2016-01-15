@@ -1,8 +1,8 @@
-var Player = function(id, type){
+var Player = function(id, type, width, height){
   // this.userID = userID;
   this.id = id;
-  this.x = Math.floor(Math.random() * 200);
-  this.y = Math.floor(Math.random() * 200);
+  this.x = type === 'human' ? width / 2 : Math.floor(Math.random() * 200);
+  this.y = type === 'human' ? height / 2 : Math.floor(Math.random() * 200);
   this.type = type;
 };
 
