@@ -17,7 +17,9 @@ var Game = function(data){
   this.players = [];
   this.socketID = data.data.id;
   this.checkingCollision = false;
-  // this.isHuman = false;
+  this.catScoreTime = moment();
+  this.humanResetTime = moment();
+  this.playerDropTime = moment();
 };
 
 Game.prototype.checkIfHuman = function(){
@@ -56,8 +58,6 @@ Game.prototype.playCreateFunction = function(){
   //add input events
   this.cursors = this.game.input.keyboard.createCursorKeys();
   this.marco = this.game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
-  console.log(this.cursors);
-  console.log(this.marco);
 
   //load sounds
   this.meow = this.game.add.audio('meow');
@@ -120,10 +120,26 @@ Game.prototype.playUpdateFunction = function(){
   //ensure human always top layer of canvas
   this.game.world.bringToTop(this.human.sprite);
 
-  if (this.mask) {
   //set mask to follow human
+  if (this.mask) {
     this.mask.x = this.human.x + (this.human.sprite.width / 2);
     this.mask.y = this.human.y + (this.human.sprite.height / 2);
+  }
+
+  if (this.checkIfHuman()){
+    var catTime = moment().diff(this.catScoreTime, 'seconds');
+    console.log(catTime);
+    if (catTime > 2) {
+      this.socket.emit('catPoints');
+      this.catScoreTime = moment();
+    }
+  }
+
+  var humanTime = moment().diff(this.humanResetTime, 'seconds');
+  if (catTime > 20) {
+    // this.socket.emit('catPoints');
+    // this.catScoreTime = moment();
+    console.log('reset human');
   }
 };
 
@@ -171,20 +187,16 @@ Game.prototype.removePlayer = function(data){
 
   if (playerIndex > -1) {
     this.others.remove(this.players[playerIndex].sprite, true);
-    console.log('sprite destroyed');
     this.players.splice(playerIndex, 1);
   }
 };
 
 Game.prototype.checkHumanOthersCollisions = function(){
   //collide separates, overlap does not, try both for fun
-  console.log(this.socketID);
   var overlap = this.game.physics.arcade.overlap(this.human.sprite, this.others, function(currentSprite, otherSprite){
-    console.log('player and human collide');
+    this.catScoreTime = moment();
     this.socket.emit('catCaught', {id: otherSprite.id});
   }.bind(this));
-
-  console.log(overlap);
 };
 
 Game.prototype.storeHuman = function(){
