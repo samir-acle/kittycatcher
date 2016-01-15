@@ -1,10 +1,15 @@
 var express = require('express');
-var mongoose = require('mongoose')
+var mongoose = require('mongoose');
+
+mongoose.connect('mongodb://localhost/scores');
+var app = express();
+
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
+
 var Player = require('./models/player.js');
-var app = express();
-mongoose.connect('mongodb://localhost/scores');
+var ScoreModel = require('./models/score');
+
 var players = [];
 var GAME_HEIGHT = 600;
 var GAME_WIDTH = 800;
@@ -18,11 +23,19 @@ var games = [];
 var MAX_PLAYERS = 10;
 var room;
 var collidedCount = 0;
+var collisionScore = 1;
+var marcoScore = 30;
 
 app.use(express.static(__dirname + '/public'));
 
 app.get('/', function(req, res){
   res.sendFile(__dirname + '/index.html');
+});
+
+app.get('/scores', function(req,res){
+  ScoreModel.find({}, function(err,docs){
+    res.json(docs);
+  });
 });
 
 //TODO: encapsulate io in game object andmove to new file
@@ -53,14 +66,20 @@ io.on('connection', function(socket){
     players.push(newPlayer);
     console.log(newPlayer);
 
+    //retrieve scores from the DB
+    ScoreModel.find({}, function(err,docs){
+      console.log('scores', docs);
+      socket.emit('join:success', {
+        players: players,
+        id: socket.id,
+        height: GAME_HEIGHT,
+        width: GAME_WIDTH,
+        scores: docs
+      });
+    });
+
     //TODO: should i send player object instead of just id?
     //TODO: combine with broadcast to make dry- on client side?
-    socket.emit('join:success', {
-      players: players,
-      id: socket.id,
-      height: GAME_HEIGHT,
-      width: GAME_WIDTH
-    });
     socket.broadcast.emit('gameUpdated:add', {player: newPlayer});
   });
 
@@ -108,6 +127,18 @@ io.on('connection', function(socket){
     // collidedCount += 1;
     console.log('collision');
     console.log(data);
+    ScoreModel.find({type: 'human'}, function(err,docs){
+      docs[0].score += collisionScore;
+      docs[0].save(function(err){
+        if (err) {
+          console.log('error');
+        } else {
+          console.log('no error');
+          io.emit('gameUpdated:humanScore',{score: docs[0].score});
+        }
+      });
+    });
+
     io.emit('gameUpdated:kill', {id: data.id});
   });
 

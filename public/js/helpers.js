@@ -15,3 +15,11 @@ helpers.getIndexByID = function(id, array) {
   });
   return playerIndex;
 };
+
+helpers.setCatScore = function(score){
+  $('.cat').text('CATS: ' + score);
+};
+
+helpers.setHumanScore = function(score){
+  $('.human').text('HUMAN: ' + score);
+};
