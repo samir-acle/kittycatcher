@@ -10,9 +10,3 @@ function setSocketListeners(socket){
     helpers.setCatScore(data.score);
   });
 }
-
-function setSocketListeners(socket){
-  socket.on('gameUpdated:catScore', function(data){
-    helpers.setCatScore(data.score);
-  });
-}
