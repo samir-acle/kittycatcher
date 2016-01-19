@@ -24,6 +24,8 @@ The scores are currently global and persist over time.
 ###Libraries/Frameworks/Plug-Ins
 * [socket.io](http://socket.io/)
 * [phaser.io](http://phaser.io/)
+* [express](http://expressjs.com/)
+* [node.js](https://nodejs.org/en/)
 
 ##Next Steps
 * Implement multiple game sessions
