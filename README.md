@@ -31,4 +31,7 @@ The scores are currently global and persist over time.
 * Implement multiple game sessions
 * Have the human be randomized every 20 seconds
 * Implement chat functionality
-* Decrease lag
+
+####Issues to Resolve
+* Lags
+* Scoring is not balanced
