@@ -6,7 +6,7 @@ ScoreModel.remove({}, function(err){
   console.log(err);
 });
 
-var human = new ScoreModel({type: 'human', score: 100});
+var human = new ScoreModel({type: 'human', score: 0});
 var cats = new ScoreModel({type: 'cat', score: 0});
 
 human.save({function(err){
